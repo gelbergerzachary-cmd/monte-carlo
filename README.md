@@ -78,19 +78,6 @@ monte-carlo/
 └── README.md
 ```
 
----
-
-## Deploy to Railway
-
-1. Push to GitHub (see above)
-2. Go to [railway.app](https://railway.app) → **New Project → Deploy from GitHub**
-3. Select this repo — Railway auto-detects the `Procfile`
-4. Go to **Settings → Generate Domain** for a public URL
-
-Auto-deploys on every `git push`.
-
----
-
 ## License
 
 MIT
