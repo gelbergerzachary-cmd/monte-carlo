@@ -3,7 +3,8 @@
 A web app that runs **Geometric Brownian Motion (GBM)** Monte Carlo simulations on real stock data, fetched live via yfinance. Visualizes thousands of possible price paths with confidence bands, rainbow path coloring, and key risk statistics.
 
 ---
-
+##Live Demo Version 
+https://monte-carlo-1.onrender.com
 ## Features
 
 - **Live stock data** — fetches 1 year of real price history via yfinance for any ticker
