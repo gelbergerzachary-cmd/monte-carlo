@@ -23,14 +23,14 @@
   --sw:       280px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
+html,body{height:100%}
 body{
   background:var(--bg);color:var(--text);
   font-family:'DM Sans',sans-serif;
   display:flex;flex-direction:column;
+  overflow:hidden;
 }
 
-/* subtle dot grid */
 body::before{
   content:'';position:fixed;inset:0;
   background-image:radial-gradient(circle,rgba(245,166,35,.06) 1px,transparent 1px);
@@ -189,8 +189,13 @@ input[type=range]::-webkit-slider-thumb{
 .ch-meta{
   font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap;
 }
-.chart-wrap{position:relative;flex:1;min-height:0}
-canvas#chart{position:absolute;inset:0;width:100%!important;height:100%!important}
+.chart-wrap{
+  position:relative;flex:1;min-height:0;
+}
+canvas#chart{
+  position:absolute;inset:0;
+  width:100%!important;height:100%!important;
+}
 
 /* empty / loading */
 .empty{
@@ -239,50 +244,113 @@ canvas#chart{position:absolute;inset:0;width:100%!important;height:100%!importan
 /* overlay */
 .overlay{
   display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,.65);z-index:150;
-  backdrop-filter:blur(3px);
+  background:rgba(0,0,0,.55);
+  z-index:155;
+  pointer-events:none;
+}
+.overlay.open{
+  display:block;
+  pointer-events:auto;
 }
 
-/* ════════════ MOBILE ════════════ */
-@media(max-width:720px){
-  html,body{overflow:auto}
-  .body{flex-direction:column;overflow:visible}
-
-  .h-tag{display:none}
-  .mob-toggle{display:flex;align-items:center;gap:5px}
-
-  .sidebar{
-    position:fixed;top:52px;left:0;bottom:0;
-    width:min(300px,88vw);z-index:160;
-    transform:translateX(-100%);
-    box-shadow:6px 0 40px rgba(0,0,0,.6);
-  }
-  .sidebar.open{transform:translateX(0)}
-  .overlay.open{display:block}
-
-  .main{
-    padding:10px 12px;gap:10px;
-    min-height:calc(100dvh - 52px);
-    overflow-y:auto;
-  }
-
-  .chart-card{min-height:280px}
-  .chart-wrap{min-height:220px}
-
-  .stats{grid-template-columns:repeat(2,1fr);gap:7px}
-  .stat{padding:9px 10px}
-  .stat-val{font-size:13px}
-}
-
+/* ════════════ TABLET ════════════ */
 @media(min-width:721px) and (max-width:1060px){
   :root{--sw:240px}
   .stats{grid-template-columns:repeat(3,1fr)}
 }
 
-/* scrollbar */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+/* ════════════ MOBILE ════════════ */
+@media(max-width:720px){
+  /* allow the page to scroll naturally on mobile */
+  html,body{height:auto;overflow:auto;}
+  body{overflow-x:hidden;}
+
+  .body{
+    flex-direction:column;
+    overflow:visible;
+    min-height:0;
+    height:auto;
+  }
+
+  /* header */
+  .h-tag{display:none}
+  .mob-toggle{
+    display:flex;align-items:center;gap:5px;
+  }
+
+  /* sidebar becomes a fixed drawer */
+  .sidebar{
+    position:fixed;
+    top:52px;left:0;bottom:0;
+    width:min(300px,88vw);
+    z-index:170;
+    transform:translateX(-100%);
+    box-shadow:6px 0 40px rgba(0,0,0,.7);
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .sidebar.open{transform:translateX(0)}
+
+  /* main scrolls as a normal document flow */
+  .main{
+    width:100%;
+    padding:10px 12px 24px;
+    gap:10px;
+    overflow:visible;
+    flex:none;
+  }
+
+  /* chart card: fixed height so canvas has something to measure */
+  .chart-card{
+    flex:none;
+    height:300px;
+    min-height:0;
+  }
+
+  /* chart-wrap fills the card minus the header row (~46px) */
+  .chart-wrap{
+    height:calc(300px - 46px);
+    min-height:0;
+    flex:none;
+  }
+
+  /* stats: 2-col grid, full-width */
+  .stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+    flex-shrink:0;
+  }
+  .stat{padding:10px 11px;}
+  .stat-val{font-size:13px;}
+  .stat-lbl{font-size:8px;}
+  .stat-sub{font-size:8px;}
+
+  /* make sliders thumb easier to tap */
+  input[type=range]::-webkit-slider-thumb{
+    width:22px;height:22px;
+  }
+
+  /* scenario buttons bigger tap targets */
+  .sc-btn{padding:10px 5px;font-size:12px;}
+
+  /* chips slightly bigger */
+  .chip{padding:5px 10px;font-size:11px;}
+
+  /* ticker input */
+  .ticker-input{font-size:16px;} /* prevent iOS zoom on focus */
+  .run-btn{padding:10px 16px;font-size:14px;}
+
+  /* toast at bottom-center on mobile */
+  .toast{
+    left:50%;right:auto;
+    transform:translateX(-50%) translateY(6px);
+    white-space:nowrap;
+  }
+  .toast.show{
+    transform:translateX(-50%) translateY(0);
+  }
+}
 </style>
 </head>
 <body>
@@ -295,9 +363,11 @@ canvas#chart{position:absolute;inset:0;width:100%!important;height:100%!importan
   <button class="mob-toggle" id="mobToggle" onclick="toggleSidebar()">☰ Controls</button>
 </div>
 
-<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
 <div class="body">
+
+  <!-- OVERLAY (inside body, z-index lower than sidebar) -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
   <!-- SIDEBAR -->
   <div class="sidebar" id="sidebar">
@@ -453,7 +523,7 @@ const pct=(a,b)=>{const p=((b-a)/a*100).toFixed(1);return(p>0?'+':'')+p+'%'};
 
 /* ── rainbow colours for paths ── */
 function rainbowColor(i, total, alpha){
-  const hue = Math.round((i / total) * 300); // 0→300 = red→violet
+  const hue = Math.round((i / total) * 300);
   return `hsla(${hue},85%,62%,${alpha})`;
 }
 
@@ -517,7 +587,6 @@ function renderChart(data){
   const datasets=[];
   const np=data.paths.length;
 
-  // rainbow individual paths
   data.paths.forEach((path,i)=>{
     datasets.push({
       data:path,
@@ -529,7 +598,6 @@ function renderChart(data){
     });
   });
 
-  // outer band p5–p95
   datasets.push({
     label:'P5–P95',
     data:data.bands.p95,
@@ -543,7 +611,6 @@ function renderChart(data){
     fill:false,pointRadius:0,tension:0.4,
   });
 
-  // inner band p25–p75
   datasets.push({
     label:'P25–P75',
     data:data.bands.p75,
@@ -557,7 +624,6 @@ function renderChart(data){
     fill:false,pointRadius:0,tension:0.4,
   });
 
-  // median — amber
   datasets.push({
     label:'Median',
     data:data.bands.p50,
@@ -568,11 +634,16 @@ function renderChart(data){
 
   if(chartInstance)chartInstance.destroy();
 
+  // Size canvas to its wrapper before creating chart
+  const wrap = canvas.parentElement;
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+
   chartInstance=new Chart(canvas,{
     type:'line',
     data:{labels,datasets},
     options:{
-      responsive:false,
+      responsive:true,
       maintainAspectRatio:false,
       animation:{duration:450,easing:'easeInOutQuart'},
       interaction:{mode:'index',intersect:false},
@@ -612,19 +683,20 @@ function renderChart(data){
     },
   });
 
-  // resize observer so canvas always fills wrapper
+  // ResizeObserver keeps chart filling wrapper on any resize
   if(chartInstance._resizeObs)chartInstance._resizeObs.disconnect();
-  const wrap=canvas.parentElement;
-  const ro=new ResizeObserver(()=>{
-    canvas.width=wrap.clientWidth;
-    canvas.height=wrap.clientHeight;
-    chartInstance.resize();
+  const ro=new ResizeObserver(entries=>{
+    const e = entries[0];
+    const w = e.contentRect.width;
+    const h = e.contentRect.height;
+    if(w > 0 && h > 0){
+      canvas.width = w;
+      canvas.height = h;
+      chartInstance.resize();
+    }
   });
   ro.observe(wrap);
   chartInstance._resizeObs=ro;
-  canvas.width=wrap.clientWidth;
-  canvas.height=wrap.clientHeight;
-  chartInstance.resize();
 
   const dl=data.days>=252?Math.round(data.days/252)+'y':Math.round(data.days/21)+'mo';
   document.getElementById('chartTitle').innerHTML=
