@@ -28,7 +28,6 @@ body{
   background:var(--bg);color:var(--text);
   font-family:'DM Sans',sans-serif;
   display:flex;flex-direction:column;
-  overflow:hidden;
 }
 
 body::before{
@@ -261,91 +260,84 @@ canvas#chart{
 
 /* ════════════ MOBILE ════════════ */
 @media(max-width:720px){
-  /* allow the page to scroll naturally on mobile */
-  html,body{height:auto;overflow:auto;}
-  body{overflow-x:hidden;}
+  html,body{
+    height:auto;
+    overflow-x:hidden;
+    overflow-y:auto;
+  }
 
   .body{
     flex-direction:column;
-    overflow:visible;
-    min-height:0;
     height:auto;
+    overflow:visible;
   }
 
-  /* header */
   .h-tag{display:none}
+
   .mob-toggle{
     display:flex;align-items:center;gap:5px;
   }
 
-  /* sidebar becomes a fixed drawer */
+  /* sidebar: fixed drawer, only 75vw wide, always scrollable */
   .sidebar{
     position:fixed;
     top:52px;left:0;bottom:0;
-    width:min(300px,88vw);
+    width:75vw;
+    max-width:300px;
     z-index:170;
     transform:translateX(-100%);
-    box-shadow:6px 0 40px rgba(0,0,0,.7);
+    box-shadow:6px 0 40px rgba(0,0,0,.8);
     overflow-y:auto;
+    overflow-x:hidden;
     -webkit-overflow-scrolling:touch;
+    padding-bottom:40px;
   }
-  .sidebar.open{transform:translateX(0)}
+  .sidebar.open{transform:translateX(0);}
 
-  /* main scrolls as a normal document flow */
+  /* main: full width, normal flow */
   .main{
     width:100%;
-    padding:10px 12px 24px;
+    padding:12px 12px 32px;
     gap:10px;
     overflow:visible;
     flex:none;
   }
 
-  /* chart card: fixed height so canvas has something to measure */
+  /* chart card fixed height */
   .chart-card{
     flex:none;
-    height:300px;
-    min-height:0;
+    height:260px;
   }
 
-  /* chart-wrap fills the card minus the header row (~46px) */
   .chart-wrap{
-    height:calc(300px - 46px);
-    min-height:0;
+    height:210px;
     flex:none;
   }
 
-  /* stats: 2-col grid, full-width */
+  /* stats 2 col */
   .stats{
-    display:grid;
     grid-template-columns:1fr 1fr;
     gap:7px;
-    flex-shrink:0;
   }
-  .stat{padding:10px 11px;}
-  .stat-val{font-size:13px;}
+  .stat{padding:9px 10px;}
+  .stat-val{font-size:12px;}
   .stat-lbl{font-size:8px;}
   .stat-sub{font-size:8px;}
 
-  /* make sliders thumb easier to tap */
   input[type=range]::-webkit-slider-thumb{
-    width:22px;height:22px;
+    width:24px;height:24px;
   }
 
-  /* scenario buttons bigger tap targets */
   .sc-btn{padding:10px 5px;font-size:12px;}
-
-  /* chips slightly bigger */
   .chip{padding:5px 10px;font-size:11px;}
+  .ticker-input{font-size:16px;}
+  .run-btn{padding:10px 14px;font-size:14px;}
 
-  /* ticker input */
-  .ticker-input{font-size:16px;} /* prevent iOS zoom on focus */
-  .run-btn{padding:10px 16px;font-size:14px;}
-
-  /* toast at bottom-center on mobile */
   .toast{
     left:50%;right:auto;
     transform:translateX(-50%) translateY(6px);
     white-space:nowrap;
+    bottom:80px;
   }
   .toast.show{
     transform:translateX(-50%) translateY(0);
